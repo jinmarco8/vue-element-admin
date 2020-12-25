@@ -26,18 +26,21 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       NProgress.done() // hack: https://github.com/PanJiaChen/vue-element-admin/pull/2939
     } else {
-      // determine whether the user has obtained his permission roles through getInfo
-      const hasRoles = store.getters.roles && store.getters.roles.length > 0
-      if (hasRoles) {
+      // 刷新页面store会清空，需要实时计算
+      // determine whether the user has obtained his permission fids through getInfo
+      // 判断是用户自己点击还是刷新，fids数据如果在则不需要重新生成，否则要到后台捞数据，后台新增getInfo接口
+      const hasFids = store.getters.fids && store.getters.fids.length > 0
+      if (hasFids) {
         next()
       } else {
         try {
           // get user info
           // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
-          const { roles } = await store.dispatch('user/getInfo')
-
-          // generate accessible routes map based on roles
-          const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
+          // console.log('before fids')
+          const { user_fids } = await store.dispatch('user/getInfo')
+          // cosnole.log('after fids')
+          // generate accessible routes map based on fids
+          const accessRoutes = await store.dispatch('permission/generateRoutes', user_fids.split(','))
 
           // dynamically add accessible routes
           router.addRoutes(accessRoutes)
@@ -47,9 +50,15 @@ router.beforeEach(async(to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           // remove token and go to login page to re-login
-          await store.dispatch('user/resetToken')
-          Message.error(error || 'Has Error')
-          next(`/login?redirect=${to.path}`)
+          // console.log('before reset')
+          // 402错误不做处理，由request内部message box插件自行处理
+          if (error.toString().indexOf('402') === -1) {
+            await store.dispatch('user/resetToken')
+            // console.log(error)
+            Message.error(error.toString() || 'Has Error')
+            // console.log('after reset')
+            next(`/login?redirect=${to.path}`)
+          }
           NProgress.done()
         }
       }

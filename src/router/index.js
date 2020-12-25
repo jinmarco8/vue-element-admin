@@ -11,6 +11,7 @@ import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
 import tableRouter from './modules/table'
 import nestedRouter from './modules/nested'
+import myMenuRouter from './modules/mymenu'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -30,6 +31,7 @@ import nestedRouter from './modules/nested'
     affix: true                  if set true, the tag will affix in the tags-view
     breadcrumb: false            if set false, the item will hidden in breadcrumb(default is true)
     activeMenu: '/example/list'  if set path, the sidebar will highlight the path you set
+    fID: None                      fID is from backend system msg to verify the function list of login user, when None default add this function
   }
  */
 
@@ -136,6 +138,7 @@ export const asyncRoutes = [
     alwaysShow: true, // will always show the root menu
     name: 'Permission',
     meta: {
+      fID: '1',
       title: 'Permission',
       icon: 'lock',
       roles: ['admin', 'editor'] // you can set roles in root nav
@@ -146,6 +149,7 @@ export const asyncRoutes = [
         component: () => import('@/views/permission/page'),
         name: 'PagePermission',
         meta: {
+          fID: '1-1',
           title: 'Page Permission',
           roles: ['admin'] // or you can only set roles in sub nav
         }
@@ -155,6 +159,7 @@ export const asyncRoutes = [
         component: () => import('@/views/permission/directive'),
         name: 'DirectivePermission',
         meta: {
+          fID: '1-2',
           title: 'Directive Permission'
           // if do not set roles, means: this page does not require permission
         }
@@ -164,6 +169,7 @@ export const asyncRoutes = [
         component: () => import('@/views/permission/role'),
         name: 'RolePermission',
         meta: {
+          fID: '1-3',
           title: 'Role Permission',
           roles: ['admin']
         }
@@ -174,21 +180,30 @@ export const asyncRoutes = [
   {
     path: '/icon',
     component: Layout,
+    meta: {
+      fID: '2'
+    },
     children: [
       {
         path: 'index',
         component: () => import('@/views/icons/index'),
         name: 'Icons',
-        meta: { title: 'Icons', icon: 'icon', noCache: true }
+        meta: { fID: '2-1', title: 'Icons', icon: 'icon', noCache: true }
       }
     ]
   },
 
   /** when your routing map is too long, you can split it into small modules **/
+  // fID 3
   componentsRouter,
+  // fID 4
   chartsRouter,
+  // fID 5
   nestedRouter,
+  // fID 6
   tableRouter,
+  // my_menu,
+  myMenuRouter,
 
   {
     path: '/example',
@@ -388,7 +403,7 @@ export const asyncRoutes = [
 ]
 
 const createRouter = () => new Router({
-  // mode: 'history', // require service support
+  mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })

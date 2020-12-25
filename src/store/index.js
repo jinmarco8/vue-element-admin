@@ -22,4 +22,6 @@ const store = new Vuex.Store({
   getters
 })
 
+console.log('store is init...')
+
 export default store

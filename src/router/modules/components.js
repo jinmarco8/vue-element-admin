@@ -8,6 +8,7 @@ const componentsRouter = {
   redirect: 'noRedirect',
   name: 'ComponentDemo',
   meta: {
+    fID: '3',
     title: 'Components',
     icon: 'component'
   },
@@ -16,55 +17,55 @@ const componentsRouter = {
       path: 'tinymce',
       component: () => import('@/views/components-demo/tinymce'),
       name: 'TinymceDemo',
-      meta: { title: 'Tinymce' }
+      meta: { fID: '3-1', title: 'Tinymce' }
     },
     {
       path: 'markdown',
       component: () => import('@/views/components-demo/markdown'),
       name: 'MarkdownDemo',
-      meta: { title: 'Markdown' }
+      meta: { fID: '3-2', title: 'Markdown' }
     },
     {
       path: 'json-editor',
       component: () => import('@/views/components-demo/json-editor'),
       name: 'JsonEditorDemo',
-      meta: { title: 'JSON Editor' }
+      meta: { fID: '3-3', title: 'JSON Editor' }
     },
     {
       path: 'split-pane',
       component: () => import('@/views/components-demo/split-pane'),
       name: 'SplitpaneDemo',
-      meta: { title: 'SplitPane' }
+      meta: { fID: '3-4', title: 'SplitPane' }
     },
     {
       path: 'avatar-upload',
       component: () => import('@/views/components-demo/avatar-upload'),
       name: 'AvatarUploadDemo',
-      meta: { title: 'Upload' }
+      meta: { fID: '3-5', title: 'Upload' }
     },
     {
       path: 'dropzone',
       component: () => import('@/views/components-demo/dropzone'),
       name: 'DropzoneDemo',
-      meta: { title: 'Dropzone' }
+      meta: { fID: '3-6', title: 'Dropzone' }
     },
     {
       path: 'sticky',
       component: () => import('@/views/components-demo/sticky'),
       name: 'StickyDemo',
-      meta: { title: 'Sticky' }
+      meta: { fID: '3-7', title: 'Sticky' }
     },
     {
       path: 'count-to',
       component: () => import('@/views/components-demo/count-to'),
       name: 'CountToDemo',
-      meta: { title: 'Count To' }
+      meta: { fID: '3-8', title: 'Count To' }
     },
     {
       path: 'mixin',
       component: () => import('@/views/components-demo/mixin'),
       name: 'ComponentMixinDemo',
-      meta: { title: 'Component Mixin' }
+      meta: { fID: '3-9', title: 'Component Mixin' }
     },
     {
       path: 'back-to-top',

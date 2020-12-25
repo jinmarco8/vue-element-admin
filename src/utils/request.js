@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
@@ -19,7 +19,7 @@ service.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['X-Token'] = getToken()
+      config.headers['X-XToken'] = getToken()
     }
     return config
   },
@@ -43,16 +43,24 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    const res = response.data
+    const { response_status, response_message } = response.data
+
+    // 除402（服务器端token过期），的所有情况都自动refresh复位
+    // 返回码：402手工复位
+    if (response_status !== '402') {
+      store.dispatch('globals/changeSetting', {
+        'key': 'isRefresh',
+        'value': false })
+    }
 
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (response_status === '403') {
       Message({
-        message: res.message || 'Error',
+        message: response_message || 'Error',
         type: 'error',
         duration: 5 * 1000
       })
-
+      /**
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
@@ -65,10 +73,49 @@ service.interceptors.response.use(
             location.reload()
           })
         })
+      }**/
+      return Promise.reject(new Error(response_message || 'Error'))
+    } else if (response_status === '401') {
+      Message({
+        message: response_message || 'Error',
+        type: 'error',
+        duration: 5 * 1000
+      })
+      return Promise.reject(new Error(response_message || 'Error'))
+    } else if (response_status === '402') {
+      if (store.getters.isReFresh) {
+        store.dispatch('globals/changeSetting', {
+          'key': 'isRefresh',
+          'value': false })
+        // 如果是客户点击refresh按钮，当前页面已经不存在，因此直接返回登录页面报错
+        // 将response_message中的402过滤掉,让外层permission可以正常消费
+        return Promise.reject(new Error(response_message.replace('402', '') || 'Error'))
       }
-      return Promise.reject(new Error(res.message || 'Error'))
+      // 非客户refresh按钮，正常调整则弹框提示
+      MessageBox.confirm('抱歉，登录超时, 请您重新登录', '提示信息', {
+        confirmButtonText: '返回登录页面',
+        cancelButtonText: '留在当前页',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          // const current_path = this.$route.path
+          // if (current_path.indexOf('/login') !== -1) {
+          location.reload()
+          // }
+        })
+      })
+      // Message({
+      //   message: response_message || 'Error',
+      //   type: 'error',
+      //   duration: 5 * 1000
+      // })
+      store.dispatch('globals/changeSetting', {
+        'key': 'isRefresh',
+        'value': false })
+
+      return Promise.reject(new Error(response_message || 'Error'))
     } else {
-      return res
+      return response
     }
   },
   error => {
@@ -76,7 +123,7 @@ service.interceptors.response.use(
     Message({
       message: error.message,
       type: 'error',
-      duration: 5 * 1000
+      duration: 6 * 1000
     })
     return Promise.reject(error)
   }

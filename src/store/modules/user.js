@@ -7,7 +7,8 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  fids: []
 }
 
 const mutations = {
@@ -25,16 +26,22 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_FIDS: (state, fids) => {
+    state.fids = fids
   }
 }
 
+// 将返回的promise对象在@views/login/index.vue 中进行then消费
 const actions = {
   // user login
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({ username: username.trim(), password: password, args: ['1', '2', '3'] }).then(response => {
         const { data } = response
+        // 此处处理登录返回报文
+        // console.log(data)
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
@@ -54,17 +61,23 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { roles, name, avatar, introduction } = data
+        // user_roles user_introduction is never define in the backend system
+        const { user_fids, user_roles, user_name, user_avatar, user_introduction } = data
+        let user_fids_array = []
 
         // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+        if (!user_fids || user_fids.length <= 0) {
+          reject('getInfo: 本系统不支持Guestt用户，' + user_name + '没有配置访问权限!')
+        } else {
+          // 转数组
+          user_fids_array = user_fids.split(',')
         }
 
-        commit('SET_ROLES', roles)
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        commit('SET_INTRODUCTION', introduction)
+        commit('SET_FIDS', user_fids_array)
+        commit('SET_ROLES', user_roles)
+        commit('SET_NAME', user_name)
+        commit('SET_AVATAR', user_avatar)
+        commit('SET_INTRODUCTION', user_introduction)
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -78,6 +91,7 @@ const actions = {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
+        commit('SET_FIDS', [])
         removeToken()
         resetRouter()
 
@@ -97,6 +111,7 @@ const actions = {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
       commit('SET_ROLES', [])
+      commit('SET_FIDS', [])
       removeToken()
       resolve()
     })
